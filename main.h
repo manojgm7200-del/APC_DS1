@@ -9,4 +9,16 @@ typedef struct Node
 
 
 }Dlist;
+
+typedef enum
+{
+    e_success,
+    e_failure
+}Status;
+
+typedef struct
+{
+   Dlist *head;
+   Dlist *tail;
+}Node;
 #endif

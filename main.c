@@ -1,94 +1,156 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #include "main.h"
 
-int insert_at_last(Dlist **head1, Dlist **tail1, int data1)
+Status print_list(Dlist *head);
+Status insert_at_end(Node*list,int digit);
+Status init(Node*list)
 {
-    Dlist *newNode = malloc(sizeof(Dlist));
-    
-    newNode->data=data1;
-    newNode -> next = NULL;
-
-    if(*head1 == NULL)
+    list->head=NULL;
+    list->tail=NULL;
+}
+Status create_list(Node *list,char*str)
+{
+    int i=0;
+    int digit;
+    while(str[i]!=0)
     {
-        newNode -> prev = NULL;
-        *head1 = newNode;
-        return 0;
+        digit = str[i]-48;
+        i++;
+        insert_at_end(list,digit);
+    }
+}
+Status print_list(Dlist*head)
+{
+        if(head==NULL)
+        {
+            printf("List is empty!!\n");
+            return e_failure;
+
+        }
+    while(head)
+    {
+        printf("%d ",head->data);
+        head=head->next;
+    }
+    printf("\n");
+}
+Status insert_at_end(Node*list,int digit)
+{
+    Dlist*newNode=malloc(sizeof(Dlist));
+    if(newNode == NULL)
+    {
+        printf("Memory allocation is failed\n");
+        return e_success;
+    }
+    newNode->data=digit;
+    newNode->next=NULL;
+
+    if(list->head == NULL)
+    {
+        list->head = newNode;
+        list->tail = newNode;
+        return e_success;
     }
 
-    Dlist *temp = NULL;
+    newNode -> prev = list->tail;
+    list->tail->next = newNode;
+    list->tail = newNode;
 
-    temp = *head1;
-
-    while(temp->next != NULL)
-    {
-        temp = temp->next;
-    }
-    temp->next= newNode;
-    newNode -> prev = temp;
+    return e_success;
 }
 
-void print(Dlist *head1,Dlist *tail1,int data1)
+Status insert_at_first(Node*list,int digit)
 {
-    Dlist *temp;
-    temp = head1;
-
-    while(temp!=NULL)
+    Dlist*newNode2= malloc(sizeof(Dlist));
+    if(newNode2 == NULL)
     {
-        printf("->%d ",temp->data);
-        temp = temp-> next;
-
+        printf("Memory allocation is failed\n");
+        return e_success;
     }
-    printf(" NULL\n");
+    newNode2->data=digit;
+    newNode2->prev=NULL;
+    newNode2->next=NULL;
+
+    if(list->head == NULL)
+    {
+        list->head = newNode2;
+        list->tail = newNode2;
+
+        return e_success;
+    }
+
+    newNode2->next = list->head;
+    list->head->prev = newNode2;
+    list->head = newNode2;
+
+    return e_success;
 }
-int main(int argc, char *argv[])
+
+Status addition(Node*list,Node*list2,Node*result)
 {
-    Dlist *head1,*head2,*tail1,*tail2;
-    int data1,data2;
-    if(argc >=4)
+    int digit;
+    int sum=0,carry=0;
 
+    Dlist*temp1=list->tail;
+    Dlist*temp2=list2->tail;
+
+    while(temp1 || temp2)
     {
-        char *str=NULL;
-        char *str1=NULL;
-
-        str = argv[1];
-        str1 = argv[3];
-
-        int i=0;
-        int j=0;
-
-        if(argv[1][0] == '-' && argv[3][0] == '-')
+        if(temp1 && temp2)
         {
-            str = argv[1]+1;
-            str1 = argv[1]+1;
+            sum = temp1->data + temp2->data + carry;
+            carry=sum/10;
+            digit=sum%10;
 
-        }
-        else
-        {
-            str = argv[1];
+            insert_at_first(result,digit);
+            temp1 = temp1->prev;
+            temp2 = temp2->prev;
         }
 
-        while(str[i]!=0)
+        else if(temp1 && (temp2==NULL))
         {
-            data1 = str[i]-48;
-            i++;
+            sum = temp1->data + carry;
+            carry=sum/10;
+            digit=sum%10;
 
-           insert_at_last(&head1,&tail1,data1); 
+            insert_at_first(result,digit);
+            temp1 = temp1->prev;
         }
-
-        print(head1,tail1,data1);
-
-        while(str1[j] != 0)
+        else if((temp1==NULL) && temp2 )
         {
-            data2 = str1[j]-48;
-            j++;
-            insert_at_last(&head2,&tail2,data2);
-        }
-        print(head2,tail2,data2);
+            sum = temp2->data + carry;
+            carry=sum/10;
+            digit=sum%10;
 
+            insert_at_first(result,digit);
+            temp2 = temp2->prev;
+        }
     }
-    else
+    if(carry)
     {
-        printf("Must give 4 Arguments\n");
+        insert_at_first(result,carry);
+        carry=0;
     }
+    return e_success; 
+}
+
+
+int main(int argc,char *argv[])
+{
+    Node list;
+    Node list2;
+    Node result;
+
+    init(&list);
+    init(&list2);
+    init(&result);
+
+    create_list(&list,argv[1]);
+    create_list(&list2,argv[3]);
+    print_list(list.head);
+    print_list(list2.head);
+    addition(&list,&list2,&result);
+    print_list(result.head);
 }
